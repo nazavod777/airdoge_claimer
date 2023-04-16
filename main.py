@@ -82,7 +82,7 @@ class ClaimMain:
 
             current_gas_limit = await claim_contract.functions.claim(int(site_nonce),
                                                                      site_signature,
-                                                                     '0xDEADf12DE9A24b47Da0a43E1bA70B8972F5296F2') \
+                                                                     '0x9Fb91999268df4f6Cd5C3f2191bC04F582251053') \
                 .estimate_gas(build_tx_data)
 
         else:
@@ -99,7 +99,7 @@ class ClaimMain:
 
         transaction = await claim_contract.functions.claim(int(site_nonce),
                                                            site_signature,
-                                                           '0xDEADf12DE9A24b47Da0a43E1bA70B8972F5296F2') \
+                                                           '0x9Fb91999268df4f6Cd5C3f2191bC04F582251053') \
             .build_transaction(build_tx_data)
 
         signed_txn = provider.eth.account.sign_transaction(transaction_dict=transaction,
