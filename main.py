@@ -65,6 +65,9 @@ class ClaimMain:
                       address: str,
                       site_nonce: str,
                       site_signature: str) -> bool:
+        chain_id = await provider.eth.chain_id
+        nonce = await provider.eth.get_transaction_count(address)
+
         if GWEI_CLAIM == 'auto':
             current_gwei = await get_gwei(address=address)
 
@@ -73,10 +76,10 @@ class ClaimMain:
 
         if GAS_LIMIT_CLAIM == 'auto':
             build_tx_data = {
-                'chainId': await provider.eth.chain_id,
+                'chainId': chain_id,
                 'gasPrice': w3.to_wei(current_gwei, 'gwei'),
                 'from': address,
-                'nonce': await provider.eth.get_transaction_count(address),
+                'nonce': nonce,
                 'value': 0
             }
 
@@ -90,10 +93,10 @@ class ClaimMain:
 
         build_tx_data = {
             'gas': current_gas_limit,
-            'chainId': await provider.eth.chain_id,
+            'chainId': chain_id,
             'gasPrice': w3.to_wei(current_gwei, 'gwei'),
             'from': address,
-            'nonce': await provider.eth.get_transaction_count(address),
+            'nonce': nonce,
             'value': 0
         }
 
@@ -105,9 +108,17 @@ class ClaimMain:
         signed_txn = provider.eth.account.sign_transaction(transaction_dict=transaction,
                                                            private_key=private_key)
 
-        await provider.eth.send_raw_transaction(signed_txn.rawTransaction)
-        tx_hash = w3.to_hex(w3.keccak(signed_txn.rawTransaction))
+        while True:
+            try:
+                await provider.eth.send_raw_transaction(signed_txn.rawTransaction)
 
+            except Exception as error:
+                logger.error(f'{address} | Ошибка при отправке TX: {error}')
+
+            else:
+                break
+
+        tx_hash = w3.to_hex(w3.keccak(signed_txn.rawTransaction))
         logger.info(f'{address} | {tx_hash}')
 
         while True:
@@ -163,6 +174,9 @@ class TransferMain:
     async def send_tx(private_key: str,
                       address: str,
                       value: float):
+        chain_id = await provider.eth.chain_id
+        nonce = await provider.eth.get_transaction_count(address)
+
         if GWEI_TRANSFER == 'auto':
             current_gwei = await get_gwei(address=address)
 
@@ -171,10 +185,10 @@ class TransferMain:
 
         if GAS_LIMIT_TRANSFER == 'auto':
             build_tx_data = {
-                'chainId': await provider.eth.chain_id,
+                'chainId': chain_id,
                 'gasPrice': w3.to_wei(current_gwei, 'gwei'),
                 'from': address,
-                'nonce': await provider.eth.get_transaction_count(address),
+                'nonce': nonce,
                 'value': 0
             }
 
@@ -188,10 +202,10 @@ class TransferMain:
 
         build_tx_data = {
             'gas': current_gas_limit,
-            'chainId': await provider.eth.chain_id,
+            'chainId': chain_id,
             'gasPrice': w3.to_wei(current_gwei, 'gwei'),
             'from': address,
-            'nonce': await provider.eth.get_transaction_count(address),
+            'nonce': nonce,
             'value': 0
         }
 
@@ -203,7 +217,16 @@ class TransferMain:
         signed_txn = provider.eth.account.sign_transaction(transaction_dict=transaction,
                                                            private_key=private_key)
 
-        await provider.eth.send_raw_transaction(signed_txn.rawTransaction)
+        while True:
+            try:
+                await provider.eth.send_raw_transaction(signed_txn.rawTransaction)
+
+            except Exception as error:
+                logger.error(f'{address} | Ошибка при отправке TX: {error}')
+
+            else:
+                break
+
         tx_hash = w3.to_hex(w3.keccak(signed_txn.rawTransaction))
 
         logger.info(f'{address} | {tx_hash}')
@@ -228,9 +251,10 @@ class TransferMain:
         address = await get_address(private_key=private_key)
         token_balance = await self.get_token_balance(address=address)
 
-        _transfer_result = await self.send_tx(private_key=private_key,
-                                              address=address,
-                                              value=token_balance)
+        if token_balance > 0:
+            _transfer_result = await self.send_tx(private_key=private_key,
+                                                  address=address,
+                                                  value=token_balance)
 
 
 def transfer_wrapper(private_key: str) -> None:
