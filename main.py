@@ -290,29 +290,14 @@ if __name__ == '__main__':
     GAS_LIMIT_TRANSFER: int | str = settings_json['gas_limit_transfer']
     GWEI_TRANSFER: int | str = settings_json['gwei_transfer']
 
-    try:
-        GAS_LIMIT_CLAIM = int(GAS_LIMIT_CLAIM)
+    values = [(GAS_LIMIT_CLAIM, int), (GWEI_CLAIM, float), (GAS_LIMIT_TRANSFER, int), (GWEI_TRANSFER, float)]
 
-    except ValueError:
-        pass
-
-    try:
-        GWEI_CLAIM = float(GWEI_CLAIM)
-
-    except ValueError:
-        pass
-
-    try:
-        GAS_LIMIT_TRANSFER = int(GAS_LIMIT_CLAIM)
-
-    except ValueError:
-        pass
-
-    try:
-        GWEI_TRANSFER = float(GWEI_TRANSFER)
-
-    except ValueError:
-        pass
+    for value, func in values:
+        match value:
+            case int(value):
+                value = func(value)
+            case str(value):
+                pass
 
     with open('accounts.txt', 'r', encoding='utf-8-sig') as file:
         accounts_list = [format_keys(value=row.strip()) for row in file]
