@@ -4,7 +4,7 @@
   "token_contract_address": "0x09E18590E8f76b6Cf471b3cd75fE1A1a9D2B2c2b",
   "transfer_to_address": "",
   "gas_limit_claim": "auto",
-  "gwei_claim": 0.1,
+  "gwei_claim": "auto",
   "gas_limit_transfer": "auto",
   "gwei_transfer": "auto"
 }
